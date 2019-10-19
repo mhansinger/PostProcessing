@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+from os.path import join
 
 
 try:
@@ -15,9 +16,9 @@ except:
     print('Install matplotlib2tikz: pip3 install matplotlib2tikz')
 
 
-location_dict =['010','050','100','120','150','200','300']
+location_dict =['01','03','05','10','15','20','30']
 
-mypath = input('Where did you save the scatter data?, type in: ')
+mypath = 'scatter' #input('Where did you save the scatter data?, type in: ')
 
 files = os.listdir(mypath)
 
@@ -25,82 +26,18 @@ LESdata = {}
 
 # read in the files
 for file in files:
-     if file.endswith(".txt"):
+     if file.endswith(".txt") and file.startswith("scatter_xD"):
          print('Reading in data from: '+file)
          df = pd.read_csv(mypath+'/'+file,sep='\t')
          # generate file name
-         name = file[0:-4]
+         name = file.split('.txt')[0]
          LESdata[name] = df
 
 scatterPlanes = list(LESdata.keys())
 # get the order of the files
-file_order = [int(f[-3:]) for f in scatterPlanes]
+file_order = [int(f.split('xD')[1]) for f in scatterPlanes]
 #sort_vec = sorted(range(len(file_order)), key=lambda k: file_order[k])
 scatterPlanes = [x for _,x in sorted(zip(file_order,scatterPlanes))]
-
-
-#############################################
-# reads in the experimental data
-#############################################
-# exppath = input('\nWhere is the experimental data?: ')
-# expfiles = os.listdir(exppath)
-exppath = '/home/max/Documents/07_KIT_TNF/04_TNF14/Exp_Data/species-5GP-2015' #'/home/max/Dropbox/TNF_DNS_LES/02_ExpData/Reacting_Species-5GP' #input('\nWhere is the experimental data?: ')
-expfiles = os.listdir(exppath)
-
-# consider only data from FJ200-5GP-Lr75-57:
-expfiles = [e for e in expfiles if e.startswith('FJ200-5GP-Lr75-57')]
-
-# reduce to location dict list
-expfiles = [e for e in expfiles if any(xs in e[-7:-4] for xs in location_dict)]
-
-# /home/max/Documents/10_Experimental_Data/TNF/02_ExpData/Reacting_Species_Mean_RMS-5GP/Mixture_fraction_Favre
-# /home/max/Documents/10_Experimental_Data/TNF/02_ExpData/Reacting_Species_Mean_RMS-5GP/Radial_Favre
-# /home/max/Documents/10_Experimental_Data/TNF/02_ExpData/Reacting_Species-5GP
-
-ExpData = {}
-# read in the data
-for file in expfiles:
-     if file.endswith(".csv"):
-         print('Reading in data from: '+file)
-         df = pd.read_csv(exppath+'/'+file, sep=',')
-         # generate file name
-         name = file[0:-4]
-         ExpData[name] = df
-
-ExpNames = list(ExpData.keys())
-# get the order of the files from the file ending
-exp_order = [int(f[-3:]) for f in ExpNames]
-ExpNames = [x for _, x in sorted(zip(exp_order, ExpNames))]
-
-
-
-
-#############################################
-# reads in the 8 stochastic fields
-#############################################
-mypath_8 = input('\n Where did you save the data of the fine simulation?, type in: ')
-
-try:
-    files_8 = os.listdir(mypath_8)
-
-    data_8 = {}
-    # read in the files
-    for file in files_8:
-        if file.endswith(".txt"):
-            print('Reading in data from: ' + file)
-            df = pd.read_csv(mypath_8 + '/' + file, sep='\t')
-            # generate file name
-            name = file[0:-4]
-            data_8[name] = df
-
-    scatterPlanes_8 = list(LESdata.keys())
-    # get the order of the files
-    file_order_8 = [int(f[-3:]) for f in scatterPlanes_8]
-    # sort_vec = sorted(range(len(file_order)), key=lambda k: file_order[k])
-    scatterPlanes_8 = [x for _, x in sorted(zip(file_order_8, scatterPlanes_8))]
-except FileNotFoundError:
-   print('No 8 Fields Data')
-
 
 
 #############################################
@@ -170,49 +107,12 @@ def plotDataColorPlane(spec='T',plane=0,color_by='T',colormap='inferno',sampleSi
     plt.show(block=False)
 
 
-
-
-def plotCompare(spec='T',sampleSize=50000):
-    # creates a scatter plot of the defined species over the mixture fraction
-    if spec == 'T':
-        specE = 'Tray'
-    else:
-        specE = spec
-
-    # loop over the different planes:
-    try:
-        for i in range(len(scatterPlanes)):
-            plt.figure(i+1)
-            thisData = LESdata[scatterPlanes[i]].sample(sampleSize)
-            thisExp = ExpData[ExpNames[i]]
-
-            f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=(10,6))
-            #ax1.grid()
-            ax1.scatter(thisData['f_Bilger'], thisData[spec], marker='.', s=0.2)
-            ax1.set_xlabel('f Bilger')
-            ax1.set_ylabel(spec)
-
-            ax1.set_title('Simulation')
-
-            #ax2.grid()
-            ax2.scatter(thisExp['Fblgr'], thisExp[specE], marker='.', s=0.2, color='k')
-            ax2.set_title('Experiment')
-            ax2.set_xlabel('f Bilger')
-
-            if spec=='T':
-                ax1.set_xlim(0, 0.3)
-                ax2.set_xlim(0, 0.3)
-            minSpec = min(thisData[spec]) * 0.999
-            maxSpec = max(thisData[spec]) * 1.1
-            ax1.set_ylim(minSpec, maxSpec)
-            ax2.set_ylim(minSpec, maxSpec)
-
-            f.suptitle('Plane: '+ location_dict[i])
-
-    except:
-        print('Species not available')
-
-    plt.show(block=False)
+def sample_scatter(samples):
+    # sample the scatter data set and save it again
+    for i in range(len(scatterPlanes)):
+        thisData = LESdata[scatterPlanes[i]].sample(n=samples)
+        thisData=thisData.reset_index(drop=True)
+        thisData.to_csv(join(mypath,'scatter_sample_xD'+str(location_dict[i])+'.txt'),sep='\t',index=False)
 
 
 def plotDataPlane(spec='T',plane=3,sampleSize=50000):
@@ -251,155 +151,6 @@ def plotDataPlane(spec='T',plane=3,sampleSize=50000):
         # ax.axis('off')
 
         plt.savefig(str(spec) + '_xD_' + str(int(location_dict[i])) + '.png', bbox_inches='tight', pad_inches=0)
-
-    except:
-        print('Species not available')
-
-    plt.show(block=False)
-
-
-
-def plotDataPlaneExp(spec='Tray',sampleSize=50000):
-    # creates a scatter plot of the defined species over the mixture fraction
-    plt.close('all')
-
-    if spec == 'CO':
-        spec='COLIF'
-
-    for i in range(0,8):
-        # loop over the different planes:
-        try:
-            fig = plt.figure(i + 1, frameon=False)
-            ax = plt.gca()
-            # ax = plt.Axes(fig, [0., 0., 1., 1.])
-            # ax.set_axis_off()
-            # fig.add_axes(ax)
-
-            thisExp = ExpData[ExpNames[i]].sample(sampleSize)
-            #print(thisExp)
-            ax.set_xticks([0, 0.1, 0.2, 0.3])
-
-            ax.set_xticklabels([])
-            ax.set_yticklabels([])
-            ax.grid(alpha=0.3, color='k')
-            plt.scatter(thisExp['Fblgr'], thisExp[spec], marker='.', s=0.2, color='k')
-            # plt.xlabel('Mixture fraction f')
-            # plt.ylabel(spec)
-            plt.xlim(0, 0.3)
-            # minSpec = min(thisExp[spec]) * 0.999
-            # maxSpec = max(thisExp[spec]) * 1.05
-            if spec == 'Tray':
-                plt.ylim(300, 2500)
-                ax.set_yticks([500, 1000, 1500, 2000, 2500])
-            elif spec == 'COLIF':
-                plt.ylim(0, 0.1)
-                ax.set_yticks([0, 0.033, 0.066, 0.1])
-            else:
-                plt.ylim(0,0.3)
-                ax.set_yticks([0, 0.1, 0.2, 0.3])
-
-            plt.savefig(str(spec) + '_xD_' + str(int(location_dict[i])) + 'Exp.png', bbox_inches='tight', pad_inches=0)
-
-        except:
-            print('Species not available')
-
-        plt.show(block=False)
-
-
-def plotDataPlaneExpColor(spec='Tray', color_by='Tray', colormap='inferno', sampleSize=50000):
-    # creates a scatter plot of the defined species over the mixture fraction
-    plt.close('all')
-
-    if spec == 'CO':
-        spec='COLIF'
-
-    for i in range(0,len(ExpNames)):#range(0,8):
-        # loop over the different planes:
-        try:
-            fig = plt.figure(i + 1, frameon=False)
-            ax = plt.gca()
-            # ax = plt.Axes(fig, [0., 0., 1., 1.])
-            # ax.set_axis_off()
-            # fig.add_axes(ax)
-
-            thisExp = ExpData[ExpNames[i]].sample(sampleSize)
-            ax.set_xticks([0, 0.1, 0.2, 0.3])
-            ax.set_yticks([500, 1000, 1500, 2000, 2500])
-            ax.set_xticklabels([])
-
-            ax.grid(alpha=0.3, color='k')
-            plt.scatter(thisExp['Fblgr'], thisExp[spec], marker='.', c=thisExp[color_by], s=0.2, cmap=plt.get_cmap(colormap))
-            # plt.xlabel('Mixture fraction f')
-            # plt.ylabel(spec)
-            plt.xlim(0, 0.3)
-            minSpec = min(thisExp[spec]) * 0.999
-            maxSpec = max(thisExp[spec]) * 1.05
-            if spec == 'Tray':
-                plt.ylim(300, 2500)
-                ax.set_yticks([500, 1000, 1500, 2000, 2500])
-            elif spec == 'COLIF':
-                plt.ylim(0,0.1)
-                ax.set_yticks([0, 0.033, 0.066, 0.1])
-            else:
-                plt.ylim(0,0.3)
-                ax.set_yticks([0, 0.1, 0.2, 0.3])
-
-            # plt.title('Scatter plot at: x/D=' + str(int(location_dict[i]) / 10))
-            # ax.axis('off')
-
-            plt.savefig(str(spec) + '_xD_' + str(int(location_dict[i])) + 'Exp_color.png', bbox_inches='tight', pad_inches=0)
-
-        except:
-            print('Species not available')
-
-        plt.show(block=False)
-
-
-def plotCompare_8(spec='T'):
-    # creates a scatter plot of the defined species over the mixture fraction
-    if spec == 'T':
-        specE = 'Tray'
-    else:
-        specE = spec
-
-    # loop over the different planes:
-    try:
-        for i in range(len(scatterPlanes)):
-            plt.figure(i+1)
-            thisData = LESdata[scatterPlanes[i]]
-            thisData_8 = data_8[scatterPlanes_8[i]]
-            thisExp = ExpData[ExpNames[i]]
-            f, (ax1, ax2, ax3) = plt.subplots(1, 3, sharey=True, figsize=(10,6))
-            #ax1.grid()
-            ax1.scatter(thisData['f_Bilger'], thisData[spec], marker='.', s=0.2)
-            ax1.set_xlabel('f Bilger')
-            ax1.set_ylabel(spec)
-
-            ax1.set_title('Simulation: coarse')
-
-            #ax2.grid()
-            ax2.scatter(thisData_8['f_Bilger'], thisData_8[spec], marker='.', s=0.2)
-            ax2.set_xlabel('f Bilger')
-            ax2.set_ylabel(spec)
-
-            ax2.set_title('Simulation: fine')
-
-            #ax3.grid()
-            ax3.scatter(thisExp['Fblgr'], thisExp[specE], marker='.', s=0.2, color='k')
-            ax3.set_title('Experiment')
-            ax3.set_xlabel('f Bilger')
-
-            if spec=='T':
-                ax1.set_xlim(0, 0.3)
-                ax2.set_xlim(0, 0.3)
-                ax3.set_xlim(0, 0.3)
-            minSpec = min(thisData[spec]) * 0.999
-            maxSpec = max(thisData[spec]) * 1.1
-            ax1.set_ylim(minSpec, maxSpec)
-            ax2.set_ylim(minSpec, maxSpec)
-            ax3.set_ylim(minSpec, maxSpec)
-
-            f.suptitle('Plane: '+ location_dict[i])
 
     except:
         print('Species not available')
@@ -451,7 +202,12 @@ def writeConditionedSim(nr_bins):
     '''
 
     for this_name in scatterPlanes:
+
+        print(this_name)
+
         this_set_df = LESdata[this_name]
+
+        this_set_df.sort_values('f_Bilger',inplace=True)
 
         f_condition = np.linspace(0,1,nr_bins)
 
@@ -473,12 +229,11 @@ def writeConditionedSim(nr_bins):
         this_mean_df = pd.DataFrame(data=this_np_array[1:, :], columns=this_set_df.columns)
         this_std_df = pd.DataFrame(data=this_np_std_array[1:, :], columns=this_set_df.columns)
 
-    #     plt.figure()
-    #     plt.plot(this_mean_df['f_Bilger'],this_mean_df['T'])
-    # plt.show(block=False)
+        this_mean_df['f_Bilger_conditioned'] = f_condition[:-1]+1/(2*nr_bins)
+        this_std_df['f_Bilger_conditioned'] = f_condition[:-1]+1/(2*nr_bins)
 
-        this_mean_df.to_csv('scatter/LES_conditioned_mean_%s.csv' % this_name[-5:],sep=',',index=False)
-        this_std_df.to_csv('scatter/LES_conditioned_std_%s.csv' % this_name[-5:],sep=',',index=False)
+        this_mean_df.to_csv('scatter/LES_conditioned_mean_%s.csv' % this_name.split('_')[1],sep='\t',index=False)
+        this_std_df.to_csv('scatter/LES_conditioned_std_%s.csv' % this_name.split('_')[1],sep='\t',index=False)
 
 
 def getHistogramsExp(spec='Tray',sampleSize=1000,f_min=0.05,f_max=0.06,bins=50):
@@ -597,6 +352,9 @@ def getBurningIndexSim(spec='T',sampleSize=1000,f_min=0.05,f_max=0.06,bins=50,Tm
 
         print('BI at %s is %f' % (location_dict[i],this_BI))
 
+    if not os.path.isdir('scatter/Sim'):
+        os.mkdir('scatter/Sim')
+
     BI.to_csv('scatter/Sim/BI.csv',sep=',',index=False)
 
 
@@ -631,3 +389,9 @@ def getBurningIndexExp(spec='T',sampleSize=1000,f_min=0.05,f_max=0.06,bins=50,Tm
         print('BI at %s is %f' % (location_dict[i],this_BI))
 
     BI.to_csv('scatter/Exp/BI.csv',sep=',',index=False)
+
+
+if __name__ == '__main__':
+    sample_scatter(samples=10000)
+    writeConditionedSim(nr_bins=150)
+    getBurningIndexSim(spec='T', sampleSize=1000, f_min=0.053, f_max=0.054, bins=50, Tmax=1700)

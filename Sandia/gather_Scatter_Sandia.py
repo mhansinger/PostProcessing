@@ -41,7 +41,7 @@ nLocation = np.linspace(0,len(location_dict)-1,len(location_dict))
 
 scatter_list = os.listdir(join(mypath,timeDict[0]))
 
-fields_list = [f[:-17] for f in scatter_list if f.endswith('_scatter_xD10.raw')]
+fields_list = [f.split('_scatter_xD10.raw')[0] for f in scatter_list if f.endswith('_scatter_xD10.raw')]
 
 # create scatter directory
 if os.path.isdir('scatter') is False:
@@ -103,7 +103,7 @@ for n in range(0, len(nLocation)):
     plt.title('Scatter plot at: x/D='+str(int(location_dict[n])/10))
     '''
 
-    axarr[int(n/2), isodd(n)].scatter(Output_df['f'],Output_df['T'],marker='.',s=0.3)
+    axarr[int(n/2), isodd(n)].scatter(Output_df['f_Bilger'],Output_df['T'],marker='.',s=0.3)
     axarr[int(n/2), isodd(n)].set_title('Scatter plot at: x/D='+str(float(location_dict[n])/10))
     axarr[int(n / 2), isodd(n)].set_xlim([0,0.3])
     axarr[int(n / 2), isodd(n)].set_ylim([300,2350])

@@ -3,12 +3,15 @@ This is to postprocess the data again in the desired format as required for the 
 
 @author: mhansinger
 
-last change: 8.1.2018
+last modified: Sept. 2019
+
+OXYFUEL VERSION
+
 '''
 
 #!/usr/bin/python
-'''
 
+'''
 This file extracts radial field values from OpenFoam data
 
 What you have to do is:
@@ -26,25 +29,25 @@ from os.path import isdir
 
 def radial_samples_reacting(case_path):
     # this one has to be correct and is different for inert and reacting
-    #scalarTail = '_f_BilgerMean_f_BilgerPrime2Mean_TMean_TPrime2Mean_CH4Mean_CH4Prime2Mean_H2OMean_H2OPrime2Mean_' \
-    #             'CO2Mean_CO2Prime2Mean_O2Mean_O2Prime2Mean_COMean_COPrime2Mean_H2Mean_H2Prime2Mean.xy'
+    try:
+        scalarTail = '_f_BilgerMean_f_BilgerPrime2Mean_TMean_TPrime2Mean_CH4Mean_CH4Prime2Mean_H2OMean_H2OPrime2Mean_CO2Mean_CO2Prime2Mean_O2Mean_O2Prime2Mean_COMean_COPrime2Mean_H2Mean_H2Prime2Mean.xy'
 
-    scalarTail = '_f_BilgerMean_f_BilgerPrime2Mean_TMean_TPrime2Mean_CH4Mean_CH4Prime2Mean_H2OMean_H2OPrime2Mean_CO2Mean_CO2Prime2Mean_O2Mean_O2Prime2Mean_COMean_COPrime2Mean_H2Mean_H2Prime2Mean.xy'
+    except:
 
+        scalarTail = '_f_BilgerMean_f_BilgerPrime2Mean_TMean_TPrime2Mean_CH4Mean_' \
+                 'CH4Prime2Mean_H2OMean_H2OPrime2Mean_CO2Mean_CO2Prime2Mean_O2Mean_O2Prime2Mean_COMean_COPrime2Mean_H2Mean_H2Prime2Mean.xy'
+
+        print('NO DIFFUSIVE FLUXES ARE PRESENT!')
+
+    print(scalarTail+'\n')
 
     # initialize arrays
     datapoints = 200
     noFiles = 40
 
-    # Diameter
-    d_Sandia = 0.0072
-
-    # f_BilgerMax Sandia
-    f_max = 1
-
     # represents the different locations you defined in the sample dict file
     nLocation = [0, 1, 2, 3, 4]
-    location_dict = [ '07.5',  '15',  '30', '45', '60']
+    location_dict = ['01', '03', '05', '10', '20']
 
     # get all time steps
     times = listdir(case_path+'/postProcessing/sampleDict/')
@@ -78,15 +81,18 @@ def radial_samples_reacting(case_path):
         arrayf = np.zeros((datapoints))
         arrayfRMS = np.zeros((datapoints))
 
-        # arrayf_Sandia = np.zeros((datapoints))
-        # arrayf_SandiaRMS = np.zeros((datapoints))
-
         arrayU = np.zeros((datapoints))
         arrayURMS = np.zeros((datapoints))
         arrayV = np.zeros((datapoints))
         arrayVRMS = np.zeros((datapoints))
         arrayW = np.zeros((datapoints))
         arrayWRMS = np.zeros((datapoints))
+
+        arrayJ_r_sgs = np.zeros((datapoints))
+        arrayJ_r_lam = np.zeros((datapoints))
+        arrayJsgs_r = np.zeros((datapoints))
+        arrayJlam_r = np.zeros((datapoints))
+        arrayVol = np.zeros((datapoints))
 
         # Koordinate Position
         #arrayYPos = np.zeros((datapoints))
@@ -101,7 +107,6 @@ def radial_samples_reacting(case_path):
                 except:
                     print('Check the file name and/or path of scalar fields! Something is wrong')
                     print(case_path + '/postProcessing/sampleDict/' + time + '/line_x' + str(nLocation[n]) + '-r' + str(j) + scalarTail)
-                    print(' ')
 
                 # there is the position of the T column in your data set;
                 # check for consistency! they are summed up for different j
@@ -128,22 +133,28 @@ def radial_samples_reacting(case_path):
                     arrayZPos = dataScalar[:, 2]    # m
                     arrayDist = np.sqrt(arrayYPos * arrayYPos + arrayZPos * arrayZPos)
 
+                #READ IN U ONLY IF PRESENT
                 try:
                     dataU = np.loadtxt(case_path+'/postProcessing/sampleDict/' + time + '/line_x' +
                                        str(nLocation[n]) + '-r' + str(j) + '_UMean.xy')
+
+                    winkel = 2 * j / noFiles * 3.14
+
+                    arrayU += dataU[:, 3]
+                    arrayV += np.sin(winkel) * dataU[:, 4] + np.cos(winkel) * dataU[:, 5]
+                    arrayW += np.cos(winkel) * dataU[:, 4] + np.sin(winkel) * dataU[:, 5]
+
                 except:
                     print('Check the file name of U! Something is wrong')
 
-                winkel = 2 * j / noFiles * 3.14
-
-                arrayU += dataU[:, 3]
-                arrayV += np.sin(winkel) * dataU[:, 4] + np.cos(winkel) * dataU[:, 5]
-                arrayW += np.cos(winkel) * dataU[:, 4] + np.sin(winkel) * dataU[:, 5]
-
                 # RMS
                 try:
-                    dataURMS = np.loadtxt(case_path+'/postProcessing/sampleDict/' + time +
-                                          '/line_x' + str(nLocation[n]) + '-r' + str(j) + '_UPrime2Mean.xy')
+                    try:
+                        dataURMS = np.loadtxt(case_path + '/postProcessing/sampleDict/' + time +
+                                              '/line_x' + str(nLocation[n]) + '-r' + str(j) + '_UPrime2Mean.xy')
+                    except:
+                        dataURMS = np.loadtxt(case_path + '/postProcessing/sampleDict/' + time +
+                                              '/line_x' + str(nLocation[n]) + '-r' + str(j) + '_UPrime2Mean_J_sgsPrime2Mean_J_lamPrime2Mean.xy')
                 except:
                     print('Check the file name of U! Something is wrong')
 
@@ -153,16 +164,45 @@ def radial_samples_reacting(case_path):
                 arrayVRMS += np.sqrt(np.sin(winkel) * dataURMS[:, 4] + np.cos(winkel) * dataURMS[:,5])
                 arrayWRMS += np.sqrt(np.cos(winkel) * dataURMS[:, 4] + np.sin(winkel) * dataURMS[:, 5])
 
-            # loop 2 end
 
-        # convert f_Bilger values
-        arrayf = arrayf / f_max
-        arrayfRMS = arrayfRMS/(f_max)
+                # IN CASE THE MEAN SCALAR FLUXES ARE PRESENT
+                try:
+                    dataJ = np.loadtxt(case_path+'/postProcessing/sampleDict/' + time + '/line_x' +
+                                       str(nLocation[n]) + '-r' + str(j) + '_UMean_J_sgsMean_J_lamMean.xy')
+
+                    winkel = 2 * j / noFiles * 3.14
+
+                    # get the U data again, just in case dataU was not read in
+                    arrayU += dataJ[:, 3]
+                    arrayV += np.sin(winkel) * dataJ[:, 4] + np.cos(winkel) * dataJ[:, 5]
+                    arrayW += np.cos(winkel) * dataJ[:, 4] + np.sin(winkel) * dataJ[:, 5]
+
+                    #arrayJ_sgs += dataJ[:,6]
+                    arrayJsgs_r += np.sqrt((np.sin(winkel) * dataJ[:, 7] + np.cos(winkel) * dataJ[:, 8])**2 +
+                                           (np.cos(winkel) * dataJ[:, 7] + np.sin(winkel) * dataJ[:, 8])**2)
+
+                    arrayJlam_r += np.sqrt((np.sin(winkel) * dataJ[:, 10] + np.cos(winkel) * dataJ[:, 11])**2 +
+                                           (np.cos(winkel) * dataJ[:, 10] + np.sin(winkel) * dataJ[:, 11])**2)
+                except:
+                    print('NO J_SGS_MEAN AVAILABLE!')
+
+                ## READ IN THE CELL VOLUME IF PRESENT
+                # try:
+                #     dataScalar = np.loadtxt(case_path+'/postProcessing/sampleDict/' + time + '/line_x' +
+                #                             str(nLocation[n]) + '-r' + str(j) + '_cellVolumes.xy')
+                #
+                #     # there is the position of the T column in your data set; check for consistency! they are summed up for different j
+                #     arrayVol += dataScalar[:, 3]
+                #
+                # except:
+                #     print('NO CELL VOLUME INFORMATION!')
+
+            # loop 2 end
 
         # set up to write the output file!
         Output_np = np.array((arrayDist, arrayf, arrayT, arrayCH4, arrayH2O, arrayCO2, arrayO2, arrayCO, arrayH2, arrayU,
-                              arrayV, arrayW, arrayfRMS,  arrayTRMS, arrayCH4RMS, arrayH2ORMS, arrayCO2RMS, arrayO2RMS,
-                              arrayCORMS, arrayH2RMS, arrayURMS,arrayVRMS, arrayWRMS))
+                              arrayV,arrayW,arrayfRMS, arrayTRMS, arrayCH4RMS, arrayH2ORMS, arrayCO2RMS, arrayO2RMS,
+                              arrayCORMS, arrayH2RMS, arrayURMS,arrayVRMS, arrayWRMS,arrayJsgs_r,arrayJlam_r,arrayVol))
 
         # Divide by the number of files and times and transpose
         Output_T = Output_np.T
@@ -171,21 +211,20 @@ def radial_samples_reacting(case_path):
         Output_df = pd.DataFrame(Output_T)
 
         # Name correctly the output columns
-        Output_df.columns = ['r_in_m', 'F', 'T','YCH4','YH2O','YCO2','YO2','YCO',
-                 'YH2','U_axial','U_radial','U_teta','Frms','Trms','YCH4rms','YH2Orms',
-                 'YCO2rms','YO2rms','YCOrms','YH2rms','U_axialrms','U_radialrms','U_tetarms']
+        Output_df.columns = ['r_in_m', 'Z_mean', 'T_mean','CH4_mean','H2O_mean','CO2_mean','O2_mean','CO_mean',
+                 'H2_mean','U_axial_mean','U_radial_mean','U_teta_mean','Z_rms','T_rms','CH4_rms','H2O_rms',
+                 'CO2_rms','O2_rms','CO_rms','H2_rms','U_axial_rms','U_radial_rms','U_teta_rms',
+                 'J_sgs_mean','J_lam_mean','cellVolume_mean']
 
         Output_df['r_in_m'] = arrayDist
-        Output_df['r_over_d'] = arrayDist/d_Sandia
-
 
         # remove the nan
         Output_df = Output_df.fillna(0)
 
         # write one output file for each position
-        output_name = case_path+'/postProcessing/sampleDict/' + 'line_xD' + location_dict[n] + '_Sandia.txt'
+        output_name = case_path+'/postProcessing/sampleDict/' + 'line_xD' + location_dict[n] + '_OxyFuel.txt'
         pd.DataFrame.to_csv(Output_df, output_name, index=False, sep='\t')
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     radial_samples_reacting('.')
