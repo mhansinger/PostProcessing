@@ -11,7 +11,7 @@ What you have to do:
 import numpy as np
 import pandas as pd
 import os
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from os.path import join
 
 try:
@@ -48,9 +48,9 @@ scatter_list = os.listdir(join(mypath,timeDict[0]))
 
 fields_list = [f[:-18] for f in scatter_list if f.endswith('_scatter_xD010.raw')]
 
-# Four axes, returned as a 2-d array
-f, axarr = plt.subplots(4, 2)
-isodd = lambda x: 1 if x %2 != 0 else 0
+# # Four axes, returned as a 2-d array
+# f, axarr = plt.subplots(4, 2)
+# isodd = lambda x: 1 if x %2 != 0 else 0
 
 # loop over the different planes normal to x-axis
 
@@ -120,20 +120,20 @@ for n in range(0, len(nLocation)):
     plt.title('Scatter plot at: x/D='+str(int(location_dict[n])/10))
     '''
 
-    axarr[int(n / 2), isodd(n)].scatter(Output_df['f_Bilger'], Output_df['T'], marker='.', s=0.2)
-    axarr[int(n / 2), isodd(n)].set_title('Scatter plot at: x/D=' + str(int(location_dict[n]) / 10))
-    axarr[int(n / 2), isodd(n)].set_xlim([0, 0.3])
-    axarr[int(n / 2), isodd(n)].set_ylim([300, 2350])
-    axarr[int(n / 2), isodd(n)].set_ylabel('T [K]')
-    axarr[int(n / 2), isodd(n)].set_xlabel('f Bilger')
-
-
-    # save tikz
-    # tikz_save('scatter'+location_dict[n]+'.tex')
-
-#end loop
-f.subplots_adjust(hspace=0.5)
-plt.show(block=False)
+#     axarr[int(n / 2), isodd(n)].scatter(Output_df['f_Bilger'], Output_df['T'], marker='.', s=0.2)
+#     axarr[int(n / 2), isodd(n)].set_title('Scatter plot at: x/D=' + str(int(location_dict[n]) / 10))
+#     axarr[int(n / 2), isodd(n)].set_xlim([0, 0.3])
+#     axarr[int(n / 2), isodd(n)].set_ylim([300, 2350])
+#     axarr[int(n / 2), isodd(n)].set_ylabel('T [K]')
+#     axarr[int(n / 2), isodd(n)].set_xlabel('f Bilger')
+#
+#
+#     # save tikz
+#     # tikz_save('scatter'+location_dict[n]+'.tex')
+#
+# #end loop
+# f.subplots_adjust(hspace=0.5)
+# plt.show(block=False)
 
 
 

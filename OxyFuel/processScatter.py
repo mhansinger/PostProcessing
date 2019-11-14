@@ -345,7 +345,10 @@ def getBurningIndexSim(spec='T',sampleSize=1000,f_min=0.05,f_max=0.06,bins=50,Tm
             print('sample size is reduced')
             thisSim_reduced = thisSim[(thisSim.f_Bilger > f_min) & (thisSim.f_Bilger < f_max)]
 
-        this_BI = (thisSim_reduced['T'].mean() - 300)/ (Tmax - 300)
+        # avoid values bigger 1 for BI
+        thisSim_reduced[thisSim_reduced['T'] > Tmax] = Tmax
+
+        this_BI = (thisSim_reduced['T'].mean() - 294)/ (Tmax - 294)
 
         BI['pos'].iloc[i] = scatterPlanes[i]
         BI['BI'].iloc[i] = this_BI
@@ -359,7 +362,7 @@ def getBurningIndexSim(spec='T',sampleSize=1000,f_min=0.05,f_max=0.06,bins=50,Tm
 
 
 
-def getBurningIndexExp(spec='T',sampleSize=1000,f_min=0.05,f_max=0.06,bins=50,Tmax=2100):
+def getBurningIndexExp(spec='T',sampleSize=1000,f_min=0.05,f_max=0.06,Tmax=2100):
     # creates a scatter plot of the defined species over the mixture fraction
     plt.close('all')
     #
@@ -394,4 +397,4 @@ def getBurningIndexExp(spec='T',sampleSize=1000,f_min=0.05,f_max=0.06,bins=50,Tm
 if __name__ == '__main__':
     sample_scatter(samples=10000)
     writeConditionedSim(nr_bins=150)
-    getBurningIndexSim(spec='T', sampleSize=1000, f_min=0.053, f_max=0.054, bins=50, Tmax=1700)
+    getBurningIndexSim(spec='T', sampleSize=1000, f_min=0.0515, f_max=0.0555, Tmax=1700)

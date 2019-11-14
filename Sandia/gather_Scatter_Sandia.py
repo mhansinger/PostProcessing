@@ -71,6 +71,8 @@ for n in range(0, len(nLocation)):
             length = len(this_scatter)
             #print(this_scatter)
             data_array[int(counter_array[id]):int(counter_array[id] + length),id] = this_scatter[:, 3]
+            # if field == 'f':
+            #     print('f is: ', this_scatter[:, 3][:100])
             counter_array[id] += length
         # end loop
 
@@ -103,19 +105,19 @@ for n in range(0, len(nLocation)):
     plt.title('Scatter plot at: x/D='+str(int(location_dict[n])/10))
     '''
 
-    axarr[int(n/2), isodd(n)].scatter(Output_df['f_Bilger'],Output_df['T'],marker='.',s=0.3)
-    axarr[int(n/2), isodd(n)].set_title('Scatter plot at: x/D='+str(float(location_dict[n])/10))
-    axarr[int(n / 2), isodd(n)].set_xlim([0,0.3])
-    axarr[int(n / 2), isodd(n)].set_ylim([300,2350])
-    axarr[int(n / 2), isodd(n)].set_ylabel('T [K]')
-    axarr[int(n / 2), isodd(n)].set_xlabel('f')
-
-    # save tikz
-    # tikz_save('scatter'+location_dict[n]+'.tex')
-
-#end loop
-f.subplots_adjust(hspace=0.5)
-plt.show(block=False)
+#     axarr[int(n/2), isodd(n)].scatter(Output_df['f_Bilger'],Output_df['T'],marker='.',s=0.3)
+#     axarr[int(n/2), isodd(n)].set_title('Scatter plot at: x/D='+str(float(location_dict[n])/10))
+#     axarr[int(n / 2), isodd(n)].set_xlim([0,0.3])
+#     axarr[int(n / 2), isodd(n)].set_ylim([300,2350])
+#     axarr[int(n / 2), isodd(n)].set_ylabel('T [K]')
+#     axarr[int(n / 2), isodd(n)].set_xlabel('f')
+#
+#     # save tikz
+#     # tikz_save('scatter'+location_dict[n]+'.tex')
+#
+# #end loop
+# f.subplots_adjust(hspace=0.5)
+# plt.show(block=False)
 
 
 

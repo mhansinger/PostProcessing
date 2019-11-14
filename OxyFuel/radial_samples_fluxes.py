@@ -63,6 +63,8 @@ def radial_samples_reacting(case_path):
 
                 dataScalar = np.loadtxt(case_path+'/postProcessing/sampleDict_fluxes/' + time + '/line_x'+str(nLocation[n]) + '-r' + str(j) + scalarTail)
 
+                # print('Shape dataScalar: ', dataScalar.shape)
+
                 # compute the radius only once at the beginning
                 if j == 0 and time == times[0]:
                     arrayYPos = dataScalar[:, 1]    # m
@@ -74,7 +76,10 @@ def radial_samples_reacting(case_path):
                 winkel = 2 * j / noFiles * 3.14
 
                 for k in range(len(tailNames)):
-                    dataArray[:,k] += np.sqrt((np.sin(winkel) * dataScalar[:, k] + np.cos(winkel) * dataScalar[:, k])**2 +(np.cos(winkel) * dataScalar[:, k] + np.sin(winkel) * dataScalar[:, k])**2)
+                    # dataArray[:,k] += np.sqrt((np.sin(winkel) * dataScalar[:, k] + np.cos(winkel) * dataScalar[:, k])**2 +(np.cos(winkel) * dataScalar[:, k] + np.sin(winkel) * dataScalar[:, k])**2)
+                    y_flux = (k+1)*3 + 1
+                    z_flux = (k+1)*3 + 2
+                    dataArray[:, k] += np.sqrt(dataScalar[:, y_flux]**2 + dataScalar[:, z_flux]**2)
 
             # loop 2 end
 
