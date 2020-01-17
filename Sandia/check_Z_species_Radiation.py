@@ -9,12 +9,14 @@ import os
 from os.path import join
 import cantera as ct
 
+plt.close('all')
+
 ######################################
 # some parameters
-Z_st = 0.0535
-Y_CH4_F = 0.8668
-Y_H2_F = 0.1331
-Y_O2_Ox = 0.2549
+Z_st = 0.351 # Sandia
+Y_CH4_F = 0.1563714
+Y_H2_F = 0
+Y_O2_Ox = 0.232917 # Sandia
 
 # Oxygen-Fuel to mass ratio. See Peters, p.172
 nu = (1-Z_st)/Z_st * Y_O2_Ox/(Y_CH4_F+Y_H2_F)
@@ -25,7 +27,7 @@ except:
     print('Install matplotlib2tikz: pip3 install matplotlib2tikz')
 
 
-location_dict =['01','03','05','10','15','20','30']
+location_dict =['07.5','15','30','45']
 
 mypath = 'scatter' #input('Where did you save the scatter data?, type in: ')
 
@@ -33,18 +35,26 @@ files = os.listdir(mypath)
 
 LESdata = {}
 
-# read in the files
+# # read in the files
+# for file in files:
+#      if file.endswith(".txt") and file.startswith("scatter_xD"):
+#          print('Reading in data from: '+file)
+#          df = pd.read_csv(mypath+'/'+file,sep='\t')
+#          # generate file name
+#          name = file.split('.txt')[0]
+#          LESdata[name] = df
+# read in the files and ignore xD10 as we dont have ExpData for it
 for file in files:
-     if file.endswith(".txt") and file.startswith("scatter_xD"):
+     if file.endswith(".txt") and not file.endswith('xD10.txt'):
          print('Reading in data from: '+file)
          df = pd.read_csv(mypath+'/'+file,sep='\t')
          # generate file name
-         name = file.split('.txt')[0]
+         name = file[0:-4]
          LESdata[name] = df
 
 scatterPlanes = list(LESdata.keys())
 # get the order of the files
-file_order = [int(f.split('xD')[1]) for f in scatterPlanes]
+file_order = [float(f.split('xD')[1]) for f in scatterPlanes]
 #sort_vec = sorted(range(len(file_order)), key=lambda k: file_order[k])
 scatterPlanes = [x for _,x in sorted(zip(file_order,scatterPlanes))]
 
@@ -156,7 +166,7 @@ ap_CO = lambda T: 10.09 - 0.001183 * T + 4.775e-06 * T**2  - 5.872e-10 * T**3 - 
 def plot_Radiation(sampleSize=50000):
     # creates a scatter plot of the defined species over the mixture fraction
 
-    for i in range(len(scatterPlanes)):
+    for i in range(len(scatterPlanes)-1):
         plt.figure(i + 1)
         thisData = LESdata[scatterPlanes[i]]#.sample(sampleSize)
         thisData = compute_mol_fractions(thisData)
@@ -171,19 +181,19 @@ def plot_Radiation(sampleSize=50000):
         thisData['Q_radiation'] = 4*sigma*(T**4- T_b**4)*(Q_CO2 + Q_H2O + Q_CH4 + Q_CO)
 
         thisData_sample = thisData.sample(sampleSize)
-        plt.scatter(thisData_sample['r_in_m'], thisData_sample['heatRelease'], s=0.2,c='r')
-        plt.scatter(thisData_sample['r_in_m'],thisData_sample['Q_radiation'],s=0.2,c='k')
+        #plt.scatter(thisData_sample['f_Sandia'], thisData_sample['heatRelease'], s=0.2,c='r')
+        plt.scatter(thisData_sample['f_Sandia'],thisData_sample['Q_radiation'],s=0.2,c='k')
 
         plt.xlabel('Mixture fraction')
         plt.ylabel('Q_radiation [W]')
         # plt.xlim(0, 0.3)
-        plt.xlim(0, max(thisData_sample['r_in_m'])*0.9)
+        plt.xlim(0, max(thisData_sample['f_Sandia']))
         #plt.plot([Z_st,Z_st],[0,2500],'--',lw=0.5)
         minSpec = min(thisData_sample['Q_radiation']) * 0.999
-        maxSpec = max(thisData_sample['heatRelease']) * 1.05
+        maxSpec = max(thisData_sample['Q_radiation']) * 1.05
         plt.ylim(minSpec, maxSpec)
         #plt.legend(['Bilger','Species','Z_st'])
-        plt.title('Scatter plot at: x/D=' + str(int(location_dict[i])))
+        plt.title('Scatter plot at: x/D=' + str(round(float(location_dict[i]),1)))
 
         #write back the data to LESdata
         LESdata[scatterPlanes[i]] = thisData
@@ -193,11 +203,11 @@ def plot_Radiation(sampleSize=50000):
         Q_reduced = abs(thisData_sample['heatRelease'] - thisData_sample['Q_radiation'])
         thisData_sample['ratio'] = thisData_sample['Q_radiation'] / Q_reduced
         thisData_sample['ratio'].loc[thisData_sample['heatRelease']<5e7] = 0
-        plt.scatter(thisData_sample['f_Bilger'], thisData_sample['ratio'], s=0.2, c='k')
+        plt.scatter(thisData_sample['f_Sandia'], thisData_sample['ratio'], s=0.2, c='k')
         plt.xlabel('Mixture fraction')
         plt.ylabel('dQ [%]')
         #plt.xlim(0, 0.3)
-        plt.xlim(0, max(thisData_sample['f_Bilger']))
+        plt.xlim(0, max(thisData_sample['f_Sandia']))
         #plt.plot([Z_st,Z_st],[0,2500],'--',lw=0.5)
         minSpec = 0
         maxSpec = 10
