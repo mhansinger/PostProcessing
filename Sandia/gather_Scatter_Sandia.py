@@ -11,14 +11,14 @@ What you have to do:
 import numpy as np
 import pandas as pd
 import os
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from os.path import join
 import os
 
-try:
-    from matplotlib2tikz import save as tikz_save
-except:
-    print('Install matplotlib2tikz: pip3 install matplotlib2tikz')
+# try:
+#     from matplotlib2tikz import save as tikz_save
+# except:
+#     print('Install matplotlib2tikz: pip3 install matplotlib2tikz')
 
 mypath = 'postProcessing/preview' #input('Where is the scatter data?, (e.g. preview) type in: ')
 
@@ -49,7 +49,7 @@ if os.path.isdir('scatter') is False:
 
 
 # Four axes, returned as a 2-d array
-f, axarr = plt.subplots(4, 2)
+#f, axarr = plt.subplots(4, 2)
 isodd = lambda x: 1 if x %2 != 0 else 0
 
 # loop over the different planes normal to x-axis
@@ -86,8 +86,8 @@ for n in range(0, len(nLocation)):
     #Output_df.columns = ['T', 'f_Bilger', 'PV', 'CH4', 'CO2']
 
     # skip all data where T is < 300.5
-    print('Keep only the data points where T > 300.5 K')
-    Output_df = Output_df[Output_df['T'] > 300.5]
+    print('Keep only the data points where T > 295 K')
+    Output_df = Output_df[Output_df['T'] > 295].sample(frac=0.5)
 
     #Output_df['f'] = Output_df['f_Bilger'] / f_max
 

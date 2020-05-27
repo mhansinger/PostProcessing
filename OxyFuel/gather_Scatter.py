@@ -100,7 +100,7 @@ for n in range(0, len(nLocation)):
 
     # skip all data where T is < 300.5
     print('Keep only the data points where T > 294.5 K')
-    Output_df = Output_df[Output_df['T'] > 294.5]
+    Output_df = Output_df[Output_df['T'] > 294.5].sample(frac=0.2)
 
     # # remove all Zero vals
     # print('Removing all zero values')
@@ -109,35 +109,6 @@ for n in range(0, len(nLocation)):
 
     output_name = storePath + '/scatter_xD' + location_dict[n] + '.txt'
     pd.DataFrame.to_csv(Output_df, output_name, index=False, sep='\t')
-
-    # # create scatter plot for all distances
-    # '''
-    # plt.figure(n+1)
-    # plt.scatter(arrayf,arrayT,marker='.',s=0.2)
-    # plt.xlabel('Mixture fraction f')
-    # plt.ylabel('Temperature')
-    # plt.xlim(0,0.3)
-    # plt.ylim(301,2400)
-    # plt.title('Scatter plot at: x/D='+str(int(location_dict[n])/10))
-    # '''
-
-    # axarr[int(n / 2), isodd(n)].scatter(Output_df['f_Bilger'], Output_df['T'], marker='.', s=0.2)
-    # axarr[int(n / 2), isodd(n)].set_title('Scatter plot at: x/D=' + str(int(location_dict[n]) / 10))
-    # axarr[int(n / 2), isodd(n)].set_xlim([0, 0.3])
-    # axarr[int(n / 2), isodd(n)].set_ylim([300, 2350])
-    # axarr[int(n / 2), isodd(n)].set_ylabel('T [K]')
-    # axarr[int(n / 2), isodd(n)].set_xlabel('f Bilger')
-
-
-    # save tikz
-    # tikz_save('scatter'+location_dict[n]+'.tex')
-
-#end loop
-# f.subplots_adjust(hspace=0.5)
-# plt.show(block=False)
-
-
-
 
 
 

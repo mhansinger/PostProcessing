@@ -31,7 +31,7 @@ def radial_samples_reacting(case_path):
     # this one has to be correct and is different for inert and reacting
     try:
 #        scalarTail = '_J_lamMean_J_sgsMean_J_H2Mean_J_H2_sgsMean_J_HMean_J_H_sgsMean_J_O2Mean_J_O2_sgsMean_J_H2OMean_J_H2O_sgsMean_J_CH4Mean_J_CH4_sgsMean_J_CO2Mean_J_CO2_sgsMean.xy'
-        scalarTail='_J_lamMean_J_sgsMean_J_H2Mean_J_H2_sgsMean_J_HMean_J_H_sgsMean_J_O2Mean_J_O2_sgsMean_J_H2OMean_J_H2O_sgsMean_J_CH4Mean_J_CH4_sgsMean_J_CO2Mean_J_CO2_sgsMean.xy'
+        scalarTail='_k_sgsMean.xy'
     except:
         print('Something wrong!')
 
@@ -46,24 +46,41 @@ def radial_samples_reacting(case_path):
     location_dict = ['01', '03', '05', '10', '20']
 
     # get all time steps
-    times = listdir(case_path+'/postProcessing/sampleDict_Jsgs/')
+    times = listdir(case_path+'/postProcessing/sampleDict_TKE/')
     # remove the .txt files in the times list as they are also stored in the sampleDict folder
     times = [f for f in times if f[-3:] != 'txt']
 
-    tailNames = scalarTail.split('Mean_')[:-1]
-    tailNames[0] = tailNames[0][1:]
+    # tailNames = scalarTail.split('Mean_')[:-1]
+    # tailNames[0] = tailNames[0][1:]
     # loop over the time steps for averaging
 
     for n in range(0, len(nLocation)):
 
-        dataArray = np.zeros((datapoints, len(tailNames)))
+        dataArray = np.zeros((datapoints, 4))
+
+        # arrayURMS = np.zeros((datapoints))
+        # arrayVRMS = np.zeros((datapoints))
+        # arrayWRMS = np.zeros((datapoints))
 
         for time in times:
             for j in range(0, noFiles):
 
-                dataScalar = np.loadtxt(case_path+'/postProcessing/sampleDict_Jsgs/' + time + '/line_x'+str(nLocation[n]) + '-r' + str(j) + scalarTail)
+                dataScalar = np.loadtxt(case_path+'/postProcessing/sampleDict_TKE/' + time + '/line_x'+str(nLocation[n]) + '-r' + str(j) + scalarTail)
+                dataScalar_1 = np.loadtxt(
+                    case_path + '/postProcessing/sampleDict_TKE/' + time + '/line_x' + str(nLocation[n]) + '_1-r' + str(
+                        j) + scalarTail)
+                dataScalar_2 = np.loadtxt(
+                    case_path + '/postProcessing/sampleDict_TKE/' + time + '/line_x' + str(nLocation[n]) + '_2-r' + str(
+                        j) + scalarTail)
 
-                # print('Shape dataScalar: ', dataScalar.shape)
+                dataURMS = np.loadtxt(case_path + '/postProcessing/sampleDict_TKE/' + time +
+                                      '/line_x' + str(nLocation[n]) + '-r' + str(j) + '_UPrime2Mean.xy')
+
+                dataURMS_1 = np.loadtxt(case_path + '/postProcessing/sampleDict_TKE/' + time +
+                                      '/line_x' + str(nLocation[n]) + '_1-r' + str(j) + '_UPrime2Mean.xy')
+
+                dataURMS_2 = np.loadtxt(case_path + '/postProcessing/sampleDict_TKE/' + time +
+                                      '/line_x' + str(nLocation[n]) + '_2-r' + str(j) + '_UPrime2Mean.xy')
 
                 # compute the radius only once at the beginning
                 if j == 0 and time == times[0]:
@@ -75,34 +92,32 @@ def radial_samples_reacting(case_path):
 
                 winkel = 2 * j / noFiles * 3.14
 
-                for k in range(len(tailNames)):
-                    # dataArray[:,k] += np.sqrt((np.sin(winkel) * dataScalar[:, k] + np.cos(winkel) * dataScalar[:, k])**2 +(np.cos(winkel) * dataScalar[:, k] + np.sin(winkel) * dataScalar[:, k])**2)
-                    y_flux = (k+1)*3 + 1
-                    z_flux = (k+1)*3 + 2
-                    dataArray[:, k] += np.sqrt(dataScalar[:, y_flux]**2 + dataScalar[:, z_flux]**2)
+                dataArray[:, 0] += dataScalar[:,3]  + dataScalar_1[:,3] + dataScalar_2[:,3]     # k_sgsMean
+                dataArray[:, 1] += dataURMS[:, 3]  + dataURMS_1[:, 3] +dataURMS_2[:, 3]   # u'
+                dataArray[:, 2] += dataURMS[:, 4]  + dataURMS_1[:, 4] +dataURMS_2[:, 4]   # v'
+                dataArray[:, 3] += dataURMS[:, 5]  + dataURMS_1[:, 5] +dataURMS_2[:, 5]   # w'
 
             # loop 2 end
 
-        # # set up to write the output file!
-        # Output_np = np.array((arrayDist, arrayf, arrayT, arrayCH4, arrayH2O, arrayCO2, arrayO2, arrayCO, arrayH2, arrayU,
-        #                       arrayV,arrayW,arrayfRMS, arrayTRMS, arrayCH4RMS, arrayH2ORMS, arrayCO2RMS, arrayO2RMS,
-        #                       arrayCORMS, arrayH2RMS, arrayURMS,arrayVRMS, arrayWRMS,arrayJsgs_r,arrayJlam_r,arrayVol))
-
         # Divide by the number of files
-        Output_T = dataArray/ (noFiles * len(times))
+        Output_T = dataArray / (noFiles * len(times)) / 3
         # set up dataframe to write as CSV
         Output_df = pd.DataFrame(Output_T)
 
         # Name correctly the output columns
-        Output_df.columns = tailNames
+        Output_df.columns = ['TKE_sgs','U_Prime','V_Prime','W_Prime'] #tailNames
 
         Output_df['r_in_m'] = arrayDist
+
+        Output_df['TKE_resolved'] = (Output_df.U_Prime.values +Output_df.V_Prime.values + Output_df.W_Prime.values)/ 2 # np.sqrt(Output_df.U_Prime.values ** 2 +Output_df.V_Prime.values** 2 + Output_df.W_Prime.values** 2)/2
+
+        Output_df['TKE_ratio'] = Output_df.TKE_sgs.values / (Output_df.TKE_sgs.values + Output_df.TKE_resolved.values)
 
         # remove the nan
         Output_df = Output_df.fillna(0)
 
         # write one output file for each position
-        output_name = case_path+'/postProcessing/sampleDict_Jsgs/' + 'line_xD' + location_dict[n] + '_fluxes_OxyFuel.txt'
+        output_name = case_path+'/postProcessing/sampleDict_TKE/' + 'line_xD' + location_dict[n] + '_TKE_OxyFuel.txt'
         pd.DataFrame.to_csv(Output_df, output_name, index=False, sep='\t')
 
 
