@@ -28,7 +28,7 @@ from os.path import isdir
 def radial_samples_reacting(case_path):
     # this one has to be correct and is different for inert and reacting
     try:
-        scalarTail = '_T_RMSMean.xy'
+        scalarTail = '_T_RMSMean_TPrime2Mean_f_varMean_f_BilgerPrime2Mean_TMean.xy'
 
     except:
 
@@ -55,7 +55,11 @@ def radial_samples_reacting(case_path):
     # loop over the time steps for averaging
 
     for n in range(0, len(nLocation)):
+        arrayTsgs = np.zeros((datapoints))
         arrayTRMS = np.zeros((datapoints))
+        arrayfsgs = np.zeros((datapoints))
+        arrayfRMS = np.zeros((datapoints))
+        arrayTMean = np.zeros((datapoints))
 
 
         for time in times:
@@ -69,7 +73,10 @@ def radial_samples_reacting(case_path):
 
                 # there is the position of the T column in your data set;
                 # check for consistency! they are summed up for different j
-                arrayTRMS += dataScalar[:, 3]
+                arrayTsgs += dataScalar[:, 3]
+                arrayTRMS += np.sqrt(dataScalar[:, 4])
+                arrayfsgs += np.sqrt(dataScalar[:, 5])
+                arrayfRMS += np.sqrt(dataScalar[:, 6])
 
 
                 # compute the radius only once at the beginning
@@ -79,7 +86,7 @@ def radial_samples_reacting(case_path):
                     arrayDist = np.sqrt(arrayYPos * arrayYPos + arrayZPos * arrayZPos)
 
         # set up to write the output file!
-        Output_np = np.array((arrayDist, arrayTRMS))
+        Output_np = np.array((arrayDist, arrayTsgs,arrayTRMS,arrayfsgs,arrayfRMS,arrayTMean))
 
         # Divide by the number of files and times and transpose
         Output_T = Output_np.T
@@ -88,7 +95,14 @@ def radial_samples_reacting(case_path):
         Output_df = pd.DataFrame(Output_T)
 
         # Name correctly the output columns
-        Output_df.columns = ['r_in_m', 'T_sgs_RMS']
+        Output_df.columns = ['r_in_m', 'T_sgs_RMS','T_RMS','f_sgs_RMS','f_RMS','T_Mean']
+
+        Output_df['Ratio_T'] = Output_df['T_sgs_RMS'] / (Output_df['T_sgs_RMS']+Output_df['T_RMS'])
+        Output_df['Ratio_f'] = Output_df['f_sgs_RMS'] / (Output_df['f_sgs_RMS'] + Output_df['f_RMS'])
+
+        # normalize RMS values of T with T_mean
+        Output_df['T_sgs_RMS_norm'] = Output_df['T_sgs_RMS']/ Output_df['T_Mean']
+        Output_df['T_RMS_norm'] = Output_df['T_RMS']/ Output_df['T_Mean']
 
         Output_df['r_in_m'] = arrayDist
 
@@ -96,7 +110,7 @@ def radial_samples_reacting(case_path):
         Output_df = Output_df.fillna(0)
 
         # write one output file for each position
-        output_name = case_path+'/postProcessing/sampleDict_RMS/' + 'line_xD' + location_dict[n] + '_T_sgs_RMS.txt'
+        output_name = case_path+'/postProcessing/sampleDict_RMS/' + 'line_xD' + location_dict[n] + '_sgs_RMS.txt'
         pd.DataFrame.to_csv(Output_df, output_name, index=False, sep='\t')
 
 

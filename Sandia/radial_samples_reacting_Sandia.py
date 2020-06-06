@@ -171,11 +171,12 @@ def radial_samples_reacting(case_path):
         Output_df = pd.DataFrame(Output_T)
 
         # Name correctly the output columns
-        Output_df.columns = ['r_in_m', 'F', 'T','YCH4','YH2O','YCO2','YO2','YCO',
-                 'YH2','U_axial','U_radial','U_teta','Frms','Trms','YCH4rms','YH2Orms',
-                 'YCO2rms','YO2rms','YCOrms','YH2rms','U_axialrms','U_radialrms','U_tetarms']
+        Output_df.columns = ['r_in_m', 'Z', 'T','CH4','H2O','CO2','O2','CO',
+                 'H2','U_axial','U_radial','U_teta','Zrms','Trms','CH4rms','H2Orms',
+                 'CO2rms','O2rms','COrms','H2rms','U_axialrms','U_radialrms','U_tetarms']
 
         Output_df['r_in_m'] = arrayDist
+        Output_df['r_in_mm'] = arrayDist*1000
         Output_df['r_over_d'] = arrayDist/d_Sandia
 
 
