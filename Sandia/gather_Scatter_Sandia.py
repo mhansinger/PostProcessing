@@ -92,7 +92,7 @@ for n in range(0, len(nLocation)):
     #Output_df['f'] = Output_df['f_Bilger'] / f_max
 
     output_name = storePath+'/scatter_xD' + location_dict[n] + '.txt'
-    pd.DataFrame.to_csv(Output_df,output_name,index=False,sep='\t')
+    pd.DataFrame.to_csv(Output_df,output_name,index=False,sep='\t').sample(30000)
 
     # create scatter plot for all distances
     '''
