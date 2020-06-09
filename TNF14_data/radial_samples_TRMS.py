@@ -77,6 +77,7 @@ def radial_samples_reacting(case_path):
                 arrayTRMS += np.sqrt(dataScalar[:, 4])
                 arrayfsgs += np.sqrt(dataScalar[:, 5])
                 arrayfRMS += np.sqrt(dataScalar[:, 6])
+                arrayTMean += dataScalar[:, 7]
 
 
                 # compute the radius only once at the beginning
