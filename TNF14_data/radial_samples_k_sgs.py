@@ -78,8 +78,8 @@ def radial_samples_reacting(case_path):
                 winkel = 2 * j / noFiles * 3.14
 
                 arrayURMS += dataURMS[:, 3]
-                arrayVRMS += dataURMS[:, 4]
-                arrayWRMS += dataURMS[:, 5]
+                arrayVRMS += np.sin(winkel) * dataURMS[:, 4] + np.cos(winkel) * dataURMS[:,5]#dataURMS[:, 4]
+                arrayWRMS += np.cos(winkel) * dataURMS[:, 4] + np.sin(winkel) * dataURMS[:, 5] # dataURMS[:, 5]
 
                 # compute the radius only once at the beginning
                 if j == 0 and time == times[0]:
