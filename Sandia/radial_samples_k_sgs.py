@@ -25,7 +25,7 @@ def radial_samples_reacting(case_path):
     #scalarTail = '_f_BilgerMean_f_BilgerPrime2Mean_TMean_TPrime2Mean_CH4Mean_CH4Prime2Mean_H2OMean_H2OPrime2Mean_' \
     #             'CO2Mean_CO2Prime2Mean_O2Mean_O2Prime2Mean_COMean_COPrime2Mean_H2Mean_H2Prime2Mean.xy'
 
-    scalarTail = '_k_sgs.xy'
+    scalarTail = '_k_sgsMean.xy'
 
 
     # initialize arrays
