@@ -53,7 +53,7 @@ def radial_samples_reacting(case_path):
 
     for n in range(0, len(nLocation)):
 
-        dataArray = np.zeros(datapoints, 4)
+        dataArray = np.zeros(datapoints)
 
 
         for time in times:
