@@ -41,6 +41,8 @@ def radial_samples_reacting(case_path):
     datapoints = 200
     noFiles = 40
 
+    d_Oxy = 0.005   # diameter mm
+
     # represents the different locations you defined in the sample dict file
     nLocation = [0, 1, 2, 3, 4]
     location_dict = ['01', '03', '05', '10', '20']
@@ -53,7 +55,7 @@ def radial_samples_reacting(case_path):
 
     for n in range(0, len(nLocation)):
 
-        dataArray = np.zeros(datapoints)
+        dataArray = np.zeros((datapoints))
 
 
         for time in times:
@@ -72,7 +74,7 @@ def radial_samples_reacting(case_path):
 
                 winkel = 2 * j / noFiles * 3.14
 
-                dataArray[:] += dataScalar[:,0]  # cellVolumes
+                dataArray[:] += dataScalar[:,3]  # cellVolumes
 
             # loop 2 end
 
@@ -85,6 +87,8 @@ def radial_samples_reacting(case_path):
         Output_df.columns = ['cellVolumes'] #tailNames
 
         Output_df['r_in_m'] = arrayDist
+
+        Output_df['r_over_d'] = arrayDist / d_Oxy
 
         Output_df['r_in_mm'] = arrayDist * 1000
 
