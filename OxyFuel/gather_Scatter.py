@@ -100,7 +100,7 @@ for n in range(0, len(nLocation)):
 
     # skip all data where T is < 300.5
     print('Keep only the data points where T > 294.5 K')
-    Output_df = Output_df[Output_df['T'] > 294.5].sample(frac=0.2)
+    Output_df = Output_df[Output_df['T'] > 294.5].sample(30000)
 
     # # remove all Zero vals
     # print('Removing all zero values')
