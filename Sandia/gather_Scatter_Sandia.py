@@ -87,12 +87,12 @@ for n in range(0, len(nLocation)):
 
     # skip all data where T is < 300.5
     print('Keep only the data points where T > 295 K')
-    Output_df = Output_df[Output_df['T'] > 295].sample(frac=0.1)
+    Output_df = Output_df[Output_df['T'] > 291].sample(40000)
 
     #Output_df['f'] = Output_df['f_Bilger'] / f_max
 
     output_name = storePath+'/scatter_xD' + location_dict[n] + '.txt'
-    pd.DataFrame.to_csv(Output_df,output_name,index=False,sep='\t').sample(30000)
+    pd.DataFrame.to_csv(Output_df,output_name,index=False,sep='\t')
 
     # create scatter plot for all distances
     '''
