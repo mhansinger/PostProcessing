@@ -87,7 +87,7 @@ for n in range(0, len(nLocation)):
 
     # skip all data where T is < 300.5
     print('Keep only the data points where T > 295 K')
-    Output_df = Output_df[Output_df['T'] > 291].sample(40000)
+    Output_df = Output_df[Output_df['T'] > 291].sample(30000)
 
     #Output_df['f'] = Output_df['f_Bilger'] / f_max
 
