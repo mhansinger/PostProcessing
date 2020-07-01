@@ -34,7 +34,7 @@ for file in files:
 
 scatterPlanes = list(LESdata.keys())
 # get the order of the files
-file_order = [int(f[-3:]) for f in scatterPlanes]
+file_order = [float(f.split('xD')[1]) for f in scatterPlanes]
 #sort_vec = sorted(range(len(file_order)), key=lambda k: file_order[k])
 scatterPlanes = [x for _,x in sorted(zip(file_order,scatterPlanes))]
 
