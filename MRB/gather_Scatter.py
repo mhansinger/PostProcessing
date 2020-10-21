@@ -38,7 +38,6 @@ nSets = len(timeDict)
 #nLocation = [0, 1, 2, 3, 4, 5, 6]
 location_dict = ['03', '06', '15', '22.5', '30', '60', '90']
 
-location_dict =['01','03','05','10','15','20','30']
 nLocation = np.linspace(0,len(location_dict)-1,len(location_dict))
 
 scatter_list = os.listdir(join(mypath,timeDict[0]))
