@@ -211,10 +211,10 @@ def radial_samples_reacting(case_path):
         Output_df = pd.DataFrame(Output_T)
 
         # Name correctly the output columns
-        Output_df.columns = ['r_in_m', 'Z_mean', 'T_mean','CH4_mean','H2O_mean','CO2_mean','O2_mean','CO_mean',
-                 'H2_mean','U_axial_mean','U_radial_mean','U_teta_mean','Z_rms','T_rms','CH4_rms','H2O_rms',
-                 'CO2_rms','O2_rms','CO_rms','H2_rms','U_axial_rms','U_radial_rms','U_teta_rms',
-                 'J_sgs_mean','J_lam_mean']
+        Output_df.columns = ['r_in_m', 'av_Z', 'av_T','av_CH4','av_H2O','av_CO2','av_O2','av_CO',
+                 'av_H2','U_axial_mean','av_U_radial','av_U_teta','std_Z','std_T','std_CH4','std_H2O',
+                 'std_CO2','std_O2','std_CO','std_H2','std_U_axial','std_U_radial','std_U_teta',
+                 'av_J_sgs','av_J_lam']
 
         Output_df['r_in_m'] = arrayDist
 
@@ -222,7 +222,12 @@ def radial_samples_reacting(case_path):
         Output_df = Output_df.fillna(0)
 
         # write one output file for each position
-        output_name = case_path+'/postProcessing/sampleDict/' + 'line_x' + location_dict[n] + '_MRB.txt'
+        if location_dict[n] == '0225'
+            output_name = case_path + '/postProcessing/sampleDict/' + 'line_x' + '022_5' + '_MRB.txt'
+        elif len(location_dict[n]) ==2:
+            output_name = case_path + '/postProcessing/sampleDict/' + 'line_x' + location_dict[n] + '0_MRB.txt'
+        else:
+            output_name = case_path+'/postProcessing/sampleDict/' + 'line_x' + location_dict[n] + '_MRB.txt'
         pd.DataFrame.to_csv(Output_df, output_name, index=False, sep='\t')
 
 

@@ -93,8 +93,8 @@ for n in range(0, len(nLocation)):
     Output_df = pd.DataFrame(data_array, columns=['r_in_m']+fields_list)
 
     # skip all data where T is < 300.5
-    print('Keep only the data points where T > 294.5 K')
-    Output_df = Output_df[Output_df['T'] > 294.5].sample(30000)
+    print('Keep only the data points where T > 300 K')
+    Output_df = Output_df[Output_df['T'] > 300].sample(30000)
 
     # # remove all Zero vals
     # print('Removing all zero values')
