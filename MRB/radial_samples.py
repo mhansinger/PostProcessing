@@ -222,7 +222,7 @@ def radial_samples_reacting(case_path):
         Output_df = Output_df.fillna(0)
 
         # write one output file for each position
-        if location_dict[n] == '0225'
+        if location_dict[n] == '0225':
             output_name = case_path + '/postProcessing/sampleDict/' + 'line_x' + '022_5' + '_MRB.txt'
         elif len(location_dict[n]) ==2:
             output_name = case_path + '/postProcessing/sampleDict/' + 'line_x' + location_dict[n] + '0_MRB.txt'
