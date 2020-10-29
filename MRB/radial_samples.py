@@ -53,6 +53,7 @@ def radial_samples_reacting(case_path):
     times = listdir(case_path+'/postProcessing/sampleDict/')
     # remove the .txt files in the times list as they are also stored in the sampleDict folder
     times = [f for f in times if f[-3:] != 'txt']
+    times = [f for f in times if f.startswith('0.')]
 
     # loop over the time steps for averaging
 
@@ -161,8 +162,9 @@ def radial_samples_reacting(case_path):
                 winkel = 2 * j / noFiles * 3.14
 
                 arrayURMS += np.sqrt(dataURMS[:, 3])
-                arrayVRMS += np.sqrt(np.sin(winkel) * dataURMS[:, 4] + np.cos(winkel) * dataURMS[:,5])
-                arrayWRMS += np.sqrt(np.cos(winkel) * dataURMS[:, 4] + np.sin(winkel) * dataURMS[:, 5])
+                arrayVRMS += (np.sqrt(dataURMS[:, 6]) + np.sqrt(dataURMS[:, 8]))*0.5 #np.sqrt(np.sin(winkel) * dataURMS[:, 6] + np.cos(winkel) * dataURMS[:,8])
+                arrayWRMS +=  np.sqrt(np.cos(winkel) * dataURMS[:, 6] + np.sin(winkel) * dataURMS[:, 8])
+                print(dataURMS[0,3:9])
 
 
                 # IN CASE THE MEAN SCALAR FLUXES ARE PRESENT
