@@ -164,7 +164,6 @@ def radial_samples_reacting(case_path):
                 arrayURMS += np.sqrt(dataURMS[:, 3])
                 arrayVRMS += (np.sqrt(dataURMS[:, 6]) + np.sqrt(dataURMS[:, 8]))*0.5 #np.sqrt(np.sin(winkel) * dataURMS[:, 6] + np.cos(winkel) * dataURMS[:,8])
                 arrayWRMS +=  np.sqrt(np.cos(winkel) * dataURMS[:, 6] + np.sin(winkel) * dataURMS[:, 8])
-                print(dataURMS[0,3:9])
 
 
                 # IN CASE THE MEAN SCALAR FLUXES ARE PRESENT
