@@ -213,7 +213,7 @@ def radial_samples_reacting(case_path):
 
         # Name correctly the output columns
         Output_df.columns = ['r_in_m', 'av_Z', 'av_T','av_CH4','av_H2O','av_CO2','av_O2','av_CO',
-                 'av_H2','U_axial_mean','av_U_radial','av_U_teta','std_Z','std_T','std_CH4','std_H2O',
+                 'av_H2','av_U_axial','av_U_radial','av_U_teta','std_Z','std_T','std_CH4','std_H2O',
                  'std_CO2','std_O2','std_CO','std_H2','std_U_axial','std_U_radial','std_U_teta',
                  'av_J_sgs','av_J_lam']
 
